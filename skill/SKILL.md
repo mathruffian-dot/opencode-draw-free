@@ -63,7 +63,7 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\skil
 ### 參數
 - `prompt`（必填）：要畫什麼，自然語言描述
 - `--size`：`1024x1024`（方，預設）/ `1536x1024`（橫）/ `1024x1536`（直）/ `1920x1080`（橫幅）/ `1080x1920`（直幅）
-- `--model`：`flux`（高品質，預設）/ `turbo`（快速）/ `nanobanana`（Google）/ `seedream`（字節）
+- `--model`：`flux`（高品質，預設）/ `zimage`（通義 Z-Image-Turbo，中英文文字渲染強）/ `turbo`（快速）/ `nanobanana`（Google）/ `seedream`（字節）
 - `--seed`：隨機種子（預設隨機）。相同 prompt + seed = 相同圖片
 - `--n`：生成張數 1–8（預設 1）
 - `--name`：輸出檔名前綴（預設 `image`）
@@ -77,12 +77,13 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\skil
 2. 再用其他工具（PowerPoint、Canva、小畫家）疊加中文文字
 
 ## 模型選擇原則
-- **flux**（預設）：高品質通用，適合插圖、概念圖、簡報素材。99% 情境用這個。
+- **flux**（預設）：高品質通用，適合插圖、概念圖、簡報素材。
+- **zimage**：通義 Z-Image-Turbo（6B 參數），**中英文雙語文字渲染能力最強**，適合需要圖中帶文字的場景。也附帶 2x 超分，畫質更細。
 - **turbo**：快速生成（5-10 秒），適合快速預覽、迭代測試。
 - **nanobanana**：Google Nano Banana，擅長攝影寫實風格。
 - **seedream**：字節跳動模型，對亞洲風格、東方美學較佳。
 
-不確定就用 **flux**。
+不確定就用 **flux**；需要圖中文字就用 **zimage**。
 
 ## 尺寸建議
 | 用途 | 尺寸 |

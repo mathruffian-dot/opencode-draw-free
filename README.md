@@ -69,7 +69,8 @@ powershell -ExecutionPolicy Bypass -File overlay-text.ps1 `
 
 | 模型 | 特色 | 適合 |
 |------|------|------|
-| `flux` | 高品質通用（預設） | 99% 情境 |
+| `flux` | 高品質通用（預設） | 插圖、概念圖、簡報素材 |
+| `zimage` | 通義 Z-Image-Turbo，**中英文文字渲染最強** | 圖中帶文字、海報 |
 | `turbo` | 快速 5-10 秒 | 預覽、迭代 |
 | `nanobanana` | 攝影寫實 | 寫實風格 |
 | `seedream` | 東方美學 | 亞洲風格 |
