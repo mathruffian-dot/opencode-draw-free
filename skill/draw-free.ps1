@@ -15,8 +15,11 @@
   常用：1024x1024（方）、1536x1024（橫）、1024x1536（直）、1920x1080（橫FF）、1080x1920（直FF）
 
 .PARAMETER Model
-  AI 模型（預設：flux）。
-  選項：flux（高品質通用）、turbo（快速）、nanobanana（Google Nano Banana）、seedream（字節跳動）
+  AI 模型（預設：不指定，由服務端自動路由——這是最快的走法）。
+  選項：flux、turbo、nanobanana（Google Nano Banana）、seedream（字節跳動）
+
+  ⚠️ 實測（2026-07）：明確指定任何模型都會掉到 40 秒以上一張，
+  不指定則穩定在 1-3 秒。除非你真的要某個特定模型，否則不要帶這個參數。
 
 .PARAMETER Seed
   隨機種子（預設：隨機）。相同 prompt + seed = 相同圖片，可重現結果。
@@ -41,7 +44,7 @@
 
 .NOTES
   網址：https://pollinations.ai
-  API：https://image.pollinations.ai/prompt/{描述}?width=W&height=H&model=M&seed=S&nologo=true
+  API：https://image.pollinations.ai/prompt/{描述}?width=W&height=H&seed=S&nologo=true（不帶 model 最快）
 #>
 
 param(
@@ -49,7 +52,7 @@ param(
     [string[]]$Prompt,
 
     [string]$Size = "1024x1024",
-    [string]$Model = "flux",
+    [string]$Model = "",
     [int]$Seed = -1,
     [int]$N = 1,
     [string]$Name = "image",
@@ -103,7 +106,14 @@ $FullPrompt = $PromptText + $TradChineseSuffix
 # URL 編碼
 $EncodedPrompt = [uri]::EscapeDataString($FullPrompt)
 
-Write-Host "免費生圖中（Pollinations.ai, $Model, ${Width}x${Height}, n=$N）-> $OutPath" -ForegroundColor Cyan
+# 不指定模型時由服務端自動路由（實測快 15-40 倍），指定了才帶 model 參數
+$ModelParam = if ([string]::IsNullOrWhiteSpace($Model)) { "" } else { "&model=$Model" }
+$ModelLabel = if ([string]::IsNullOrWhiteSpace($Model)) { "自動" } else { $Model }
+
+Write-Host "免費生圖中（Pollinations.ai, $ModelLabel, ${Width}x${Height}, n=$N）-> $OutPath" -ForegroundColor Cyan
+if (-not [string]::IsNullOrWhiteSpace($Model)) {
+    Write-Host "  提示：指定模型會明顯變慢（實測 40 秒以上／張）。不加 --model 最快。" -ForegroundColor DarkYellow
+}
 
 # 生成 N 張
 $SavedFiles = @()
@@ -116,7 +126,7 @@ for ($i = 1; $i -le $N; $i++) {
     }
 
     # 建立 URL
-    $Url = "https://image.pollinations.ai/prompt/$EncodedPrompt`?width=$Width&height=$Height&model=$Model&seed=$CurrentSeed&nologo=true"
+    $Url = "https://image.pollinations.ai/prompt/$EncodedPrompt`?width=$Width&height=$Height$ModelParam&seed=$CurrentSeed&nologo=true"
 
     # 檔名
     $Suffix = if ($N -gt 1) { "_$i" } else { "" }
