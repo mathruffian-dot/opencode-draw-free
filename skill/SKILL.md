@@ -1,6 +1,6 @@
 ---
 name: draw-free
-description: 免費 AI 生圖技能（Pollinations.ai，全域可用）。當使用者要求「畫一張」「生一張圖」「做一張圖」「產生圖片」但沒有 OpenAI API Key，或明確要求用免費方案生圖時，請使用此技能。此技能呼叫 PowerShell 腳本以 Pollinations.ai 免費 API 生成圖片，不需 API Key、不需登入、不需 GPU、不需安裝 Python，只需 Windows 內建 PowerShell。自動判斷輸出目錄（slides/generated 或 ./generated），支援多張生成、自訂尺寸、模型、隨機種子。適用於無 API Key 的文書筆電教學場景。
+description: 免費 AI 生圖技能（Pollinations.ai，Windows PowerShell 版）。當使用者要求「畫一張」「生一張圖」「做一張圖」「產生圖片」但沒有 OpenAI API Key，或明確要求用免費方案生圖時，請使用此技能。此技能呼叫 PowerShell 腳本以 Pollinations.ai 免費 API 生成圖片，不需 API Key、不需登入、不需 GPU、不需安裝 Python，只需 Windows 內建 PowerShell。自動判斷輸出目錄（slides/generated 或 ./generated），支援多張生成、自訂尺寸、模型、隨機種子。適用於無 API Key 的文書筆電教學場景。
 ---
 
 # 免費生圖技能（Pollinations.ai）
@@ -40,7 +40,7 @@ description: 免費 AI 生圖技能（Pollinations.ai，全域可用）。當使
 
 ## 腳本位置（Windows）
 ```
-C:\Users\user\.config\opencode\skills\draw-free\draw-free.ps1
+$env:USERPROFILE\.config\opencode\skills\draw-free\draw-free.ps1
 ```
 
 ## 使用方式

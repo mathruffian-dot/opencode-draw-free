@@ -66,7 +66,7 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\skil
 |------|------|------|
 | `prompt`（必填） | — | 自然語言描述 |
 | `--size` | `1024x1024` | `WIDTHxHEIGHT`，常用：1024x1024、1536x1024、1920x1080 |
-| `--model` | `flux` | `flux`/`turbo`/`nanobana`/`seedream` |
+| `--model` | （不指定＝自動路由，最快） | `flux`/`zimage`/`turbo`/`nanobanana`/`seedream` |
 | `--seed` | 隨機 | 整數。相同 prompt+seed=相同圖 |
 | `--n` | `1` | 1–8 張 |
 | `--name` | `image` | 檔名前綴 |
@@ -100,9 +100,11 @@ Pollinations.ai 免費版有頻率限制。腳本已內建自動重試 4 次（�
 
 ### 4. 品質等級
 本技能無 `--quality` 參數（Pollinations.ai 免費版不支援）。品質由模型決定：
-- `flux`：高品質（預設，99% 情境用這個）
+- **預設不要帶 `--model`**（自動路由約 1 秒；指定任何模型都慢 15–40 倍）。需要特定風格才指定：
+- `flux`：高品質通用
 - `turbo`：快速（5-10 秒，適合預覽）
 - `nanobanana`：攝影寫實風
+- `zimage`：中英文文字渲染最強
 - `seedream`：亞洲風格、東方美學
 
 ### 5. 費用
