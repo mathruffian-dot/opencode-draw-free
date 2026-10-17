@@ -1,6 +1,6 @@
 ---
 name: draw-free
-description: 免費 AI 生圖技能（Pollinations.ai，Windows PowerShell 版）。當使用者要求「畫一張」「生一張圖」「做一張圖」「產生圖片」但沒有 OpenAI API Key，或明確要求用免費方案生圖時，請使用此技能。此技能呼叫 PowerShell 腳本以 Pollinations.ai 免費 API 生成圖片，不需 API Key、不需登入、不需 GPU、不需安裝 Python，只需 Windows 內建 PowerShell。自動判斷輸出目錄（slides/generated 或 ./generated），支援多張生成、自訂尺寸、模型、隨機種子。適用於無 API Key 的文書筆電教學場景。
+description: 免費 AI 生圖技能（Pollinations.ai，跨平台）。當使用者要求「畫一張」「生一張圖」「做一張圖」「產生圖片」但沒有 OpenAI API Key，或明確要求用免費方案生圖時，請使用此技能。呼叫腳本以 Pollinations.ai 免費 API 生成圖片，不需 API Key、不需登入、不需 GPU、不需安裝 Python。Windows 用 draw-free.ps1（內建 PowerShell），macOS / Linux 用 draw-free.sh（bash + curl）。自動判斷輸出目錄（slides/generated 或 ./generated），支援多張生成、自訂尺寸、模型、隨機種子，並自動處理免費層每 45 秒 1 張的 402 限制。適用於無 API Key 的文書筆電教學場景。
 ---
 
 # 免費生圖技能（Pollinations.ai）
@@ -10,7 +10,7 @@ description: 免費 AI 生圖技能（Pollinations.ai，Windows PowerShell 版�
 - 100% 免費、開源
 - 不需 API Key、不需登入
 - 不需 GPU、不需安裝 Python
-- 只需 Windows 內建 PowerShell
+- Windows 用內建 PowerShell；macOS / Linux 用內建 bash + curl
 
 ## 觸發情境
 使用者說出：
@@ -24,7 +24,7 @@ description: 免費 AI 生圖技能（Pollinations.ai，Windows PowerShell 版�
 |------|------------------------------|-------------------------------|
 | 費用 | 約 NT$0.3-5.5/張 | **完全免費** |
 | API Key | 需 OpenAI Key + 組織驗證 | **不需任何 Key** |
-| Python | 需安裝 + openai 套件 | **不需，用 PowerShell** |
+| Python | 需安裝 + openai 套件 | **不需，用系統內建工具** |
 | 模型 | gpt-image-2（頂規） | Flux、Turbo、Nano Banana、Seedream |
 | 文字精準度 | 極高（99%） | 中等（複雜中文文字可能出錯） |
 | 速度 | 快 | 中等（10-30 秒） |
@@ -33,19 +33,38 @@ description: 免費 AI 生圖技能（Pollinations.ai，Windows PowerShell 版�
 **選用原則**：若使用者有 OpenAI Key 且要求高品質 → 用 `draw`；否則用 `draw-free`。
 
 ## 前置需求
-- Windows 內建 PowerShell（5.1 以上）
+- Windows 內建 PowerShell（5.1 以上）**或** macOS / Linux 的 bash + curl
 - 網路連線
 - **不需任何 API Key**
 - **不需安裝 Python 或任何套件**
 
-## 腳本位置（Windows）
+> **平台**：Windows 用 `draw-free.ps1`；macOS / Linux 用同目錄的
+> `draw-free.sh`，介面與參數完全一致（另多一個 `--delay`）。
+> 疊字工具同理：Windows 用 `overlay-text.ps1`，macOS 用 `overlay-text.sh`
+> （內部呼叫 `overlay-text.swift`，用 macOS 內建 AppKit，不需任何套件）。
+
+## 腳本位置
+
+安裝後放在你的 skills 目錄：
+
+Windows：
 ```
-$env:USERPROFILE\.config\opencode\skills\draw-free\draw-free.ps1
+$env:USERPROFILE\.config\opencode\skills\draw-free\
+  ├─ draw-free.ps1
+  └─ overlay-text.ps1
+```
+
+macOS / Linux：
+```
+~/.config/opencode/skills/draw-free/        # 或 ~/.agents/skills/draw-free/
+  ├─ draw-free.sh
+  ├─ overlay-text.sh        # 疊字工具（內部用 overlay-text.swift）
+  └─ overlay-text.swift
 ```
 
 ## 使用方式
 
-### 基本呼叫（PowerShell）
+### 基本呼叫（Windows PowerShell）
 ```powershell
 # 基本生圖
 powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\skills\draw-free\draw-free.ps1" "要畫的內容"
@@ -60,6 +79,21 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\skil
 powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\skills\draw-free\draw-free.ps1" "等距視角城市" --model turbo --seed 42 --name city
 ```
 
+### 基本呼叫（macOS / Linux）
+```bash
+# 基本生圖
+~/.config/opencode/skills/draw-free/draw-free.sh "一隻可愛的水豚在讀書"
+
+# 指定尺寸、檔名
+~/.config/opencode/skills/draw-free/draw-free.sh "演講海報" --size 1536x1024 --name poster
+
+# 多張生成（免費層每 45 秒 1 張，腳本會自動在圖片之間等待）
+~/.config/opencode/skills/draw-free/draw-free.sh "四格分鏡" --n 4 --name storyboard
+
+# 指定模型與種子（可重現）
+~/.config/opencode/skills/draw-free/draw-free.sh "等距視角城市" --model turbo --seed 42 --name city
+```
+
 ### 參數
 - `prompt`（必填）：要畫什麼，自然語言描述
 - `--size`：`1024x1024`（方，預設）/ `1536x1024`（橫）/ `1024x1536`（直）/ `1920x1080`（橫幅）/ `1080x1920`（直幅）
@@ -69,6 +103,21 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\skil
 - `--n`：生成張數 1–8（預設 1）
 - `--name`：輸出檔名前綴（預設 `image`）
 - `--outdir`：輸出目錄（預設：`slides/generated/`，沒有則用 `./generated/`）
+- `--delay SEC`：**僅 macOS / Linux 版**。多張時圖片之間的等待秒數（預設 45）
+
+### macOS / Linux 疊字工具（overlay-text.sh）
+
+在圖片上加上對話框與中文字（白底黑框圓角對話框 + 底部半透明副標）：
+
+```bash
+~/.config/opencode/skills/draw-free/overlay-text.sh \
+  --src generated/base.png --dst generated/final.png \
+  --text "壓力？那能吃嗎？" --subtitle "— 卡皮巴拉的人生哲學"
+```
+
+首次執行會自動用 `swiftc` 編譯 `overlay-text.swift` 並快取到
+`$TMPDIR/draw-free-overlay/`，之後直接執行快取檔；若沒有 `swiftc` 則退回
+`swift` 直譯模式。字型自動挑選 PingFang TC / Heiti TC，無需安裝任何套件。
 
 ## 圖中要有文字時：一律走後製，不要交給生圖模型
 
@@ -76,18 +125,33 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\skil
 
 **正確流程**：
 1. 用 `draw-free` 生「**不含任何文字**」的底圖
-2. 用同 repo 的 `overlay-text.ps1` 把文字疊上去（或用 PowerPoint／Canva）
+2. 用同 repo 的疊字腳本把文字疊上去（Windows：`overlay-text.ps1`；macOS：`overlay-text.sh`）（或用 PowerPoint／Canva）
 
 腳本雖然會自動附加「繁體中文」指令，**但那只影響模型的風格傾向，不會讓它把字寫對**。要精確文字就用後製。
 
-## 🔴 多人同時使用會互相卡
+## 🔴 免費層流量限制（2026-10 實測已變更）
 
-匿名層限制是**同一個對外 IP 同時只准 1 個請求**（伺服器回 `429 Queue full ... max: 1`）。
+免費匿名層的限制是**同一個對外 IP 每 45 秒只能生 1 張**。超過時伺服器回
+**HTTP 402**，內容為：
 
-- 一個人自己用 → 沒問題
-- 教室／辦公室共用同一個對外 IP，多人同時生圖 → **會有人失敗**
+```json
+{"status":402,"success":false,"error":{"code":"FREE_LIMIT",
+ "message":"Free limit reached: 1 image every 45 seconds per IP. Retry after 20s, ..."}}
+```
 
-腳本會自動重試 4 次（每次等 5 秒），但人一多還是擋不住。這種場合請改用其他方案。
+（較舊的說明寫「同時只准 1 個請求、回 429」，請以 402 FREE_LIMIT 為準。）
+
+影響與對策：
+- 一個人自己慢慢用 → 沒問題
+- **多張生成（`--n`）或連續生圖** → 會被擋。`draw-free.sh` 已內建因應：
+  - 偵測到 402 FREE_LIMIT 時，自動等待 **45 秒**再重試（取伺服器建議秒數與
+    45 秒的較大值）
+  - `--n > 1` 時，自動在圖片之間等待 45 秒（可用 `--delay 0` 關閉或調整）
+- 教室／辦公室共用同一個對外 IP → 大家會互相卡
+- 要解除限制可在 https://enter.pollinations.ai 取得 pollen key（非必要）
+
+> 註：Pollinations 回傳的是 **JPEG** 位元組，即使檔名存成 `.png`；這點與
+> 原 PowerShell 版行為相同。
 
 ## 模型選擇原則
 
@@ -117,7 +181,8 @@ PNG 檔，檔名格式：`<name>_<YYYYMMDD_HHMMSS>.png`，多張時加 `_1` `_2`
 ## 錯誤處理
 - **網路逾時** → 預設 timeout 120 秒；Flux 模型可能需 10-30 秒，複雜 prompt 更久
 - **檔案過小** → 腳本會警告（可能回傳了錯誤訊息而非圖片）
-- **429 Too Many Requests** → Pollinations.ai 免費版有頻率限制，等幾秒再試
+- **HTTP 402 FREE_LIMIT** → 免費層每 45 秒 1 張；`draw-free.sh` 會自動等 45 秒後重試
+- **HTTP 429 Too Many Requests** → 頻率限制，等幾秒再試
 - **空白圖 / 違反安全政策** → 改寫 prompt 避開敏感詞
 
 ## 費用

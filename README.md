@@ -1,16 +1,17 @@
 # draw-free — 免費 AI 生圖技能 for OpenCode / Claude Code
 
-> 零 API Key、零 Python、零 GPU。只要 Windows 內建 PowerShell 就能生圖。
+> 零 API Key、零 Python、零 GPU。Windows 用內建 PowerShell、macOS / Linux 用內建 bash，就能生圖。
 
 ## 這是什麼
 
-一個用 PowerShell 呼叫 [Pollinations.ai](https://pollinations.ai) 免費 URL API 的 AI 生圖技能，專為沒有 OpenAI API Key、沒有獨顯的文書筆電設計。
+一個用 [Pollinations.ai](https://pollinations.ai) 免費 URL API 生圖的 AI 生圖技能，專為沒有 OpenAI API Key、沒有獨顯的文書筆電設計。Windows 走 PowerShell，macOS / Linux 走 bash + curl。
 
 ## 特色
 
 - **完全免費** — Pollinations.ai 開源社群維護
 - **不需 API Key、不需登入**
-- **不需安裝 Python** — 只用 Windows 內建 PowerShell
+- **不需安裝 Python** — Windows 只用內建 PowerShell；macOS / Linux 只用內建 bash + curl
+- **跨平台** — Windows / macOS / Linux 皆有原生腳本
 - **不需 GPU** — 運算在雲端
 - **支援多模型** — Flux、Turbo、Nano Banana、Seedream
 - **自動重試** — 伺服器過載時自動重試 4 次
@@ -21,7 +22,9 @@
 
 ### 1. 安裝
 
-把 `skill/` 資料夾裡的兩個檔案複製到你的 skills 目錄：
+把 `skill/` 資料夾裡的檔案複製到你的 skills 目錄：
+
+**Windows（PowerShell）**
 
 ```powershell
 # OpenCode
@@ -35,15 +38,35 @@ Copy-Item "skill\draw-free.ps1" "$env:USERPROFILE\.claude\skills\draw-free\"
 Copy-Item "skill\SKILL.md" "$env:USERPROFILE\.claude\skills\draw-free\"
 ```
 
+**macOS / Linux（bash）**
+
+```bash
+# OpenCode（~/.config/opencode/skills 或 ~/.agents/skills 皆可）
+mkdir -p ~/.config/opencode/skills/draw-free
+cp skill/draw-free.sh skill/SKILL.md ~/.config/opencode/skills/draw-free/
+cp overlay-text.sh overlay-text.swift ~/.config/opencode/skills/draw-free/
+chmod +x ~/.config/opencode/skills/draw-free/*.sh
+```
+
 ### 2. 生圖
+
+**Windows**
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\skills\draw-free\draw-free.ps1" "A cute capybara reading a book, anime style" --name capybara
 ```
 
+**macOS / Linux**
+
+```bash
+~/.config/opencode/skills/draw-free/draw-free.sh "A cute capybara reading a book, anime style" --name capybara
+```
+
 圖片會存到當前工作目錄的 `slides/generated/`（沒有則建 `./generated/`）。
 
 ### 3. 加對話框（可选）
+
+**Windows**
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File overlay-text.ps1 `
@@ -51,6 +74,14 @@ powershell -ExecutionPolicy Bypass -File overlay-text.ps1 `
   -DstPath "generated/capybara_final.png" `
   -Text "壓力？那能吃嗎？" `
   -Subtitle "— 卡皮巴拉的人生哲學"
+```
+
+**macOS / Linux**（首次執行會自動用 `swiftc` 編譯並快取）
+
+```bash
+~/.config/opencode/skills/draw-free/overlay-text.sh \
+  --src generated/capybara.png --dst generated/capybara_final.png \
+  --text "壓力？那能吃嗎？" --subtitle "— 卡皮巴拉的人生哲學"
 ```
 
 ## 參數
@@ -64,6 +95,7 @@ powershell -ExecutionPolicy Bypass -File overlay-text.ps1 `
 | `--n` | `1` | 1–8 張 |
 | `--name` | `image` | 檔名前綴 |
 | `--outdir` | 自動 | 預設 `slides/generated/` |
+| `--delay` | `45` | **僅 macOS / Linux 版**：多張時圖片之間的等待秒數 |
 
 ## 模型選擇
 
@@ -109,7 +141,7 @@ HTTP 429  Queue full for IP: xxx: 1 requests already queued (max: 1)  "tier":"an
 
 這一類擴散模型畫不出正確的中文字——**生出來的是形似漢字但查無此字的東西**。英文也常有錯字。
 
-**正解是後製**：先用本技能生「不含文字的底圖」，再用 `overlay-text.ps1` 把文字疊上去。文字要正確就不要交給生圖模型。
+**正解是後製**：先用本技能生「不含文字的底圖」，再用 `overlay-text.ps1`（Windows）或 `overlay-text.sh`（macOS）把文字疊上去。文字要正確就不要交給生圖模型。
 
 ### 其他
 
@@ -121,9 +153,12 @@ HTTP 429  Queue full for IP: xxx: 1 requests already queued (max: 1)  "tier":"an
 ```
 draw-free-pkg/
 ├── skill/
-│   ├── draw-free.ps1    # 主生圖腳本
-│   └── SKILL.md         # OpenCode Skill 設定檔
-├── overlay-text.ps1     # 對話框文字疊加腳本
+│   ├── draw-free.ps1    # 主生圖腳本（Windows PowerShell）
+│   ├── draw-free.sh     # 主生圖腳本（macOS / Linux bash）
+│   └── SKILL.md         # OpenCode Skill 設定檔（跨平台）
+├── overlay-text.ps1     # 對話框文字疊加腳本（Windows）
+├── overlay-text.sh      # 對話框文字疊加腳本（macOS / Linux 包裝）
+├── overlay-text.swift   # 對話框文字疊加（macOS AppKit 實作）
 ├── AGENTS.md            # 給 AI Agent 讀的詳細指南
 ├── README.md            # 本檔
 └── LICENSE              # MIT
